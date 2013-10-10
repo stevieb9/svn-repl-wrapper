@@ -9,6 +9,8 @@ use File::NFSLock;
 
 my $slave_check_file = "/SVN/is_svn_slave";
 
+my $running_as_user  =  getpwuid( $< );
+
 # ensure we're a slave server
 
 die "$0 can only be run on a Slave SVN server!\n"
@@ -18,8 +20,10 @@ die "$0 can only be run on a Slave SVN server!\n"
 
 my $repl_lock = File::NFSLock->new( $0, LOCK_EX|LOCK_NB );
 
-if ( $repl_lock ){
+if ( ! $repl_lock ){
     die "$0 is already running... aborting this run\n";
 }
+
+system( "perl /home/steve/devel/repos/svn-repl-wrapper/sudo_pass" );
 
 sleep 10;
