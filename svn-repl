@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+use 5.12.0;
+
+use Fcntl qw( LOCK_EX LOCK_NB );
+use File::NFSLock;
+
+# Get a lock on this replication script
+
+my $repl_lock = File::NFSLock->new( $0, LOCK_EX|LOCK_NB );
+die "$0 is already running... aborting this run\n" unless $repl_lock;
+
+sleep 500;
+
+
