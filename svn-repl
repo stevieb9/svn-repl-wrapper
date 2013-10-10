@@ -7,11 +7,19 @@ use 5.12.0;
 use Fcntl qw( LOCK_EX LOCK_NB );
 use File::NFSLock;
 
+my $slave_check_file = "/SVN/is_svn_slave";
+
+# ensure we're a slave server
+
+die "$0 can only be run on a Slave SVN server!\n"
+    if ! -e $slave_check_file;
+
 # Get a lock on this replication script
 
 my $repl_lock = File::NFSLock->new( $0, LOCK_EX|LOCK_NB );
-die "$0 is already running... aborting this run\n" unless $repl_lock;
 
-sleep 500;
+if ( $repl_lock ){
+    die "$0 is already running... aborting this run\n";
+}
 
-
+sleep 10;
