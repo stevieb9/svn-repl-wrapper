@@ -54,7 +54,10 @@ sub create_dir_struct {
 
     use File::Find::Rule;
     
-    my ( $pri_dir, $dir_struct, $sec_dir_locations ) = @_;
+    my $params              = shift;
+    my $pri_dir             = $params->{ pri_dir };
+    my $dir_struct          = $params->{ dir_struct };
+    my $sec_dir_locations   = $params->{ sec_dir_locations };    
 
     for my $sec_dir ( @$sec_dir_locations ){
             
