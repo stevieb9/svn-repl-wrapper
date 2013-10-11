@@ -6,8 +6,13 @@ use 5.12.0;
 
 use Fcntl qw( LOCK_EX LOCK_NB );
 use File::NFSLock;
+use Data::Dumper;
 
-my $slave_check_file = "/SVN/is_svn_slave";
+my $pri_dir = "/SVN";
+my $dir_struct;
+
+my $slave_check_file = "$pri_dir/is_svn_slave";
+my @sec_dir_locations = qw( repos external_repos );
 
 # integrity checks
 
@@ -17,7 +22,10 @@ ensure_slave( $slave_check_file );
 lock_process();
 caller_has_sudo();
 
-sleep 10;
+my @sec_dirs = create_dir_struct( $pri_dir, $dir_struct, \@sec_dir_locations );
+
+say @sec_dirs;
+
 
 # functions
 
@@ -42,3 +50,45 @@ sub caller_has_sudo {
     die "$0 needs to be called with sudo...aborting\n"
         if $running_as_user ne 'root';
 }
+sub create_dir_struct {
+
+    use File::Find::Rule;
+    
+    my ( $pri_dir, $dir_struct, $sec_dir_locations ) = @_;
+
+    for my $sec_dir ( @$sec_dir_locations ){
+            
+    @{ $dir_struct->{ $pri_dir }{ $sec_dir } } 
+        = File::Find::Rule
+                        ->relative
+                        ->directory
+                        ->maxdepth( 1 )
+                        ->in( "$pri_dir/$sec_dir" );
+    }
+
+    print Dumper $dir_struct;
+    return $dir_struct;    
+}
+    
+sub _nothing{} # vim placeholder
+
+__END__
+my @list = ();
+my @threadlist = ();
+
+for my $lst (@list) {
+    my $t = Thread->new(\&thread_exec , $lst);
+    print "Wating for thread for $lst\n";
+    push @threadlist, $t;
+}
+
+    for my $thd (@threadlist) {
+        print "Wating for thread to join\n";
+        $thd->join;
+    }
+
+    sub thread_exec {
+                        my $info = shift;
+                            system( $info );
+                        }
+
