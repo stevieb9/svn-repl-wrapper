@@ -3,14 +3,16 @@
 use warnings;
 use strict;
 use 5.12.0;
-
+use threads;
 use Fcntl qw( LOCK_EX LOCK_NB );
 use File::NFSLock;
 use Data::Dumper;
 
 my $pri_dir = "/SVN";
+my $dest    = "/SVN.dest"; # automate
 my $slave_check_file = "$pri_dir/is_svn_slave";
 my @sec_dir_locations = qw( repos external_repos );
+my $command             = "/usr/bin/rsync -arcvv ";
 
 # integrity checks
 
@@ -25,13 +27,58 @@ my $dir_struct = create_dir_struct({
                                     sec_dir_locations   => \@sec_dir_locations, 
                                 });
 
+my @master_exclude_paths = build_exclude_paths( { dir_struct => $dir_struct } );
 
-
-my $exclude_paths = build_exclude_paths( { dir_struct => $dir_struct } );
-
-print Dumper $dir_struct;
+exec_threads({ 
+                dir_struct      => $dir_struct, 
+                master_exclude  => \@master_exclude_paths, 
+                repl_command    => $command,
+                repl_dest       => $dest,
+            });
 
 # functions
+
+sub exec_threads {
+
+    my $params = shift;
+    my $dir_struct      = $params->{ dir_struct };
+    my $repl_command    = $params->{ repl_command };
+    my $repl_dest       = $params->{ repl_dest };
+    my $excludes        = $params->{ master_exclude };
+
+    my $pri_job = "$repl_command";
+    for my $master_exclude ( @$excludes ){
+        $pri_job .= "--exclude=$master_exclude";
+    }
+
+    $pri_job .= " /SVN/* $dest";
+
+    my @repl_jobs;
+    push @repl_jobs, $pri_job;
+
+    #say $pri_job;
+
+    my $test_ret;
+    my @thread_list;
+
+    for my $job_to_thread ( @repl_jobs ) {
+        my $thread = threads->create( \&exec, $job_to_thread );
+        push @thread_list, $thread;
+    }
+    for my $t ( @thread_list ){
+        $t->join();
+    }
+
+    sub exec {
+    
+        my $job = shift;
+
+        for my $t ( @thread_list ){
+            print "Starting thread $t\n";
+            system( $job );
+        }
+   }
+}
 
 sub ensure_slave {
 
@@ -86,7 +133,7 @@ sub build_exclude_paths {
             push @{ $dir_struct->{ exclude_paths } }, "$top_level/$sec_dir";
         }
     }
-#    return @{ $dir_struct->{ exclude_paths } };
+    return @{ $dir_struct->{ exclude_paths } };
 }
 sub _nothing{} # vim placeholder
 
