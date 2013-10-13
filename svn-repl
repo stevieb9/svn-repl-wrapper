@@ -26,6 +26,11 @@ my $dir_struct = create_dir_struct({
                                 });
 
 
+
+my $exclude_paths = build_exclude_paths( { dir_struct => $dir_struct } );
+
+print Dumper $dir_struct;
+
 # functions
 
 sub ensure_slave {
@@ -69,10 +74,20 @@ sub create_dir_struct {
                                                             ->in( "$pri_dir/$sec_dir" );
     }
 
-    print Dumper $dir_struct;
     return $dir_struct;    
 }
-    
+sub build_exclude_paths {
+
+    my $params = shift;
+    my $dir_struct = $params->{ dir_struct };
+
+    for my $top_level ( keys %$dir_struct ){
+        for my $sec_dir ( keys %{ $dir_struct->{ $top_level } } ){
+            push @{ $dir_struct->{ exclude_paths } }, "$top_level/$sec_dir";
+        }
+    }
+#    return @{ $dir_struct->{ exclude_paths } };
+}
 sub _nothing{} # vim placeholder
 
 __END__
