@@ -29,7 +29,7 @@ my $dir_struct = create_dir_struct({
 
 my @master_exclude_paths = build_exclude_paths( { dir_struct => $dir_struct } );
 
-exec_threads({ 
+create_threads({ 
                 dir_struct      => $dir_struct, 
                 pri_dir         => $pri_dir,
                 master_exclude  => \@master_exclude_paths, 
@@ -39,7 +39,7 @@ exec_threads({
 
 # functions
 
-sub exec_threads {
+sub create_threads {
 
     my $params = shift;
     my $dir_struct      = $params->{ dir_struct };
@@ -125,8 +125,8 @@ sub create_dir_struct {
 }
 sub build_exclude_paths {
 
-    my $params = shift;
-    my $dir_struct = $params->{ dir_struct };
+    my $params              = shift;
+    my $dir_struct          = $params->{ dir_struct };
 
     for my $top_level ( keys %$dir_struct ){
         for my $sec_dir ( keys %{ $dir_struct->{ $top_level } } ){
