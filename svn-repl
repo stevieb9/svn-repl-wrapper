@@ -31,6 +31,7 @@ my @master_exclude_paths = build_exclude_paths( { dir_struct => $dir_struct } );
 
 exec_threads({ 
                 dir_struct      => $dir_struct, 
+                pri_dir         => $pri_dir,
                 master_exclude  => \@master_exclude_paths, 
                 repl_command    => $command,
                 repl_dest       => $dest,
@@ -44,21 +45,24 @@ sub exec_threads {
     my $dir_struct      = $params->{ dir_struct };
     my $repl_command    = $params->{ repl_command };
     my $repl_dest       = $params->{ repl_dest };
+    my $pri_dir         = $params->{ pri_dir };
     my $excludes        = $params->{ master_exclude };
 
-    my $pri_job = "$repl_command";
+    my @repl_jobs;
+    my @sec_jobs;
+
+    my $pri_job = "$repl_command ";
     for my $master_exclude ( @$excludes ){
-        $pri_job .= "--exclude=$master_exclude";
+        $pri_job .= " --exclude=$master_exclude ";
+        push @sec_jobs, "$repl_command $pri_dir/$master_exclude $dest";
     }
 
     $pri_job .= " /SVN/* $dest";
 
-    my @repl_jobs;
+    say $_ for ($pri_job, @sec_jobs);
+    exit;
     push @repl_jobs, $pri_job;
 
-    #say $pri_job;
-
-    my $test_ret;
     my @thread_list;
 
     for my $job_to_thread ( @repl_jobs ) {
@@ -66,18 +70,18 @@ sub exec_threads {
         push @thread_list, $thread;
     }
     for my $t ( @thread_list ){
+        my @list = threads->list();
+        say $$_ for @list;
+
         $t->join();
     }
-
-    sub exec {
-    
-        my $job = shift;
-
-        print "Starting thread $job\n";
-        system( $job );
-   }
 }
-
+sub exec {
+    
+    my $job = shift;
+    print "Starting thread $job\n";
+    system( $job );
+}
 sub ensure_slave {
 
     my $slave_check_file = shift;
@@ -128,7 +132,7 @@ sub build_exclude_paths {
 
     for my $top_level ( keys %$dir_struct ){
         for my $sec_dir ( keys %{ $dir_struct->{ $top_level } } ){
-            push @{ $dir_struct->{ exclude_paths } }, "$top_level/$sec_dir";
+            push @{ $dir_struct->{ exclude_paths } }, "$sec_dir";
         }
     }
     return @{ $dir_struct->{ exclude_paths } };
