@@ -70,7 +70,7 @@ sub create_threads {
 
     push @repl_jobs, ( $pri_job, @sec_jobs );
 
-    say $_ for @repl_jobs;
+    #say $_ for @repl_jobs;
 
     my @thread_list;
 
@@ -80,7 +80,7 @@ sub create_threads {
     }
     for my $t ( @thread_list ){
         my @list = threads->list();
-        say $$_ for @list;
+        #say $$_ for @list;
 
         $t->join();
     }

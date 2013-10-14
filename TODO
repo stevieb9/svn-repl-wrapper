@@ -1,3 +1,4 @@
+- remove debug say/print statements, implement a proper debug system
 - check for and implement CPAN rsync module
 - major, major cleanup on sec_dir stuff... needs rename, as does exclude
 - get thread ids and write monitoring proc
