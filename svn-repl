@@ -59,9 +59,7 @@ sub exec_threads {
 
     $pri_job .= " /SVN/* $dest";
 
-    say $_ for ($pri_job, @sec_jobs);
-    exit;
-    push @repl_jobs, $pri_job;
+    push @repl_jobs, ( $pri_job, @sec_jobs );
 
     my @thread_list;
 
