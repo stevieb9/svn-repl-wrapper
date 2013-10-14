@@ -1,3 +1,5 @@
+- check for and implement CPAN rsync module
+- major, major cleanup on sec_dir stuff... needs rename, as does exclude
 - get thread ids and write monitoring proc
 - change to obj oriented
 - change setters to getter/setters

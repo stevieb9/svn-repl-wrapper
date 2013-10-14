@@ -12,7 +12,7 @@ my $pri_dir = "/SVN";
 my $dest    = "/SVN.dest"; # automate
 my $slave_check_file = "$pri_dir/is_svn_slave";
 my @sec_dir_locations = qw( repos external_repos );
-my $command             = "/usr/bin/rsync -arcvv ";
+my $command             = "/usr/bin/rsync -arc ";
 
 # integrity checks
 
@@ -49,17 +49,28 @@ sub create_threads {
     my $excludes        = $params->{ master_exclude };
 
     my @repl_jobs;
+    my @pri_sub_dirs = keys %{ $dir_struct->{ $pri_dir } };
     my @sec_jobs;
 
     my $pri_job = "$repl_command ";
     for my $master_exclude ( @$excludes ){
         $pri_job .= " --exclude=$master_exclude ";
-        push @sec_jobs, "$repl_command $pri_dir/$master_exclude $dest";
+
+        for my $pri_sub_dir ( @pri_sub_dirs ){
+
+            foreach ( @{ $dir_struct->{ $pri_dir }{ $pri_sub_dir } } ){
+                my $job = "$repl_command $pri_dir/$pri_sub_dir/$_ $repl_dest/$pri_sub_dir";
+                push @sec_jobs, $job;
+            }
+        }
+
     }
 
     $pri_job .= " /SVN/* $dest";
 
     push @repl_jobs, ( $pri_job, @sec_jobs );
+
+    say $_ for @repl_jobs;
 
     my @thread_list;
 
