@@ -73,10 +73,8 @@ sub exec_threads {
     
         my $job = shift;
 
-        for my $t ( @thread_list ){
-            print "Starting thread $t\n";
-            system( $job );
-        }
+        print "Starting thread $job\n";
+        system( $job );
    }
 }
 
@@ -136,24 +134,4 @@ sub build_exclude_paths {
     return @{ $dir_struct->{ exclude_paths } };
 }
 sub _nothing{} # vim placeholder
-
-__END__
-my @list = ();
-my @threadlist = ();
-
-for my $lst (@list) {
-    my $t = Thread->new(\&thread_exec , $lst);
-    print "Wating for thread for $lst\n";
-    push @threadlist, $t;
-}
-
-    for my $thd (@threadlist) {
-        print "Wating for thread to join\n";
-        $thd->join;
-    }
-
-    sub thread_exec {
-                        my $info = shift;
-                            system( $info );
-                        }
 
