@@ -8,10 +8,10 @@ use Fcntl qw( LOCK_EX LOCK_NB );
 use File::NFSLock;
 use Data::Dumper;
 
-my $pri_dir = "/SVN";
-my $dest    = "/SVN.dest"; # automate
-my $slave_check_file = "$pri_dir/is_svn_slave";
-my @sec_dir_locations = qw( repos external_repos );
+my $pri_dir             = "/SVN";
+my $dest                = "/SVN.dest"; # automate
+my $slave_check_file    = "$pri_dir/is_svn_slave";
+my @sec_dir_locations   = qw( repos external_repos );
 my $command             = "/usr/bin/rsync -arc ";
 
 # integrity checks
